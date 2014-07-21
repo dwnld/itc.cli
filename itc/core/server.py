@@ -25,7 +25,7 @@ class ITCServer(ITCImageUploader):
     def __cleanup(self):
         if os.path.exists(cookie_file):
             os.remove(cookie_file)
-        
+
 
     def __checkLogin(self, mainPageTree=None):
         if mainPageTree == None:
@@ -67,7 +67,7 @@ class ITCServer(ITCImageUploader):
 
         if len(forms) == 0:
             raise
-        
+
         form = forms[0]
         actionURL = form.attrib['action']
         payload = {'theAccountName': (self._info['username'] if login == None else login)
@@ -92,7 +92,7 @@ class ITCServer(ITCImageUploader):
     def getApplicationById(self, applicationId):
         if not self.isLoggedIn:
             raise Exception('Get applications list: not logged in')
-        
+
         applicationData = self._parser.getApplicationDataById(applicationId)
         application = None
         if (applicationData != None):
@@ -101,7 +101,7 @@ class ITCServer(ITCImageUploader):
             applicationId = applicationData.applicationId
 
             application = ITCApplication(name=name, applicationId=applicationId, link=link)
-        
+
         return application
 
     def fetchApplicationsList(self):
@@ -148,13 +148,13 @@ class ITCServer(ITCImageUploader):
         formData = {}
         formNames = metadata.formNames
         submitAction = metadata.submitAction
-        
+
         formData[formNames['default language']] = metadata.languageIds[languages.languageNameForId(newAppMetadata['default language'])]
         formData[formNames['app name']]         = newAppMetadata['name']
         formData[formNames['sku number']]       = newAppMetadata['sku number']
         formData[formNames['bundle id suffix']] = newAppMetadata['bundle id suffix']
         formData[formNames['bundle id']]        = next(value for (key, value) in metadata.bundleIds.iteritems() if key.endswith(' - ' + newAppMetadata['bundle id']))
-        
+
         formData[formNames['continue action'] + '.x'] = "0"
         formData[formNames['continue action'] + '.y'] = "0"
 
@@ -166,7 +166,7 @@ class ITCServer(ITCImageUploader):
             for error in errors:
                 logging.error(error)
 
-            return
+            raise Exception(str(errors))
 
         metadata = self._parser.parseSecondAppCreatePageForm(secondPageTree)
         formData = {}
@@ -194,15 +194,15 @@ class ITCServer(ITCImageUploader):
             for error in errors:
                 logging.error(error)
 
-            return
+            raise Exception(str(errors))
 
         metadata = self._parser.parseThirdAppCreatePageForm(thirdPageTree, fetchSubcategories=newAppMetadata['primary category'])
-        
+
         formData = {}
         formNames = metadata.formNames
 
-        iconUploadScreenshotForm    = formNames['iconUploadScreenshotForm'] 
-        iphoneUploadScreenshotForm  = formNames['iphoneUploadScreenshotForm'] 
+        iconUploadScreenshotForm    = formNames['iconUploadScreenshotForm']
+        iphoneUploadScreenshotForm  = formNames['iphoneUploadScreenshotForm']
         iphone5UploadScreenshotForm = formNames['iphone5UploadScreenshotForm']
         ipadUploadScreenshotForm    = formNames['ipadUploadScreenshotForm']
         tfUploadForm                = formNames['tfUploadForm']
@@ -311,6 +311,7 @@ class ITCServer(ITCImageUploader):
         if errors != None and len(errors) != 0:
             for error in errors:
                 logging.error(error)
+            raise Exception(str(errors))
         else:
             idText = finalPageTree.xpath("//div[@id='column-bg']/div/p/label[.='Apple ID']/../span/text()")
             if len(idText) > 0:
